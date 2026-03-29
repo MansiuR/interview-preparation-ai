@@ -1,7 +1,15 @@
 import axios from "axios";
 
+const getBaseURL = () => {
+    if (import.meta.env.DEV) {
+        return "http://localhost:3000"
+    }
+    // For production, use the same origin (backend and frontend are served from same domain)
+    return window.location.origin
+}
+
 const api = axios.create({
-    baseURL: "http://localhost:3000",
+    baseURL: getBaseURL(),
     withCredentials: true,
 })
 
