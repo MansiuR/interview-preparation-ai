@@ -8,9 +8,17 @@ const Home = () => {
     const { loading, generateReport,reports } = useInterview()
     const [ jobDescription, setJobDescription ] = useState("")
     const [ selfDescription, setSelfDescription ] = useState("")
+    const [ fileName, setFileName ] = useState("")
     const resumeInputRef = useRef()
 
     const navigate = useNavigate()
+
+    const handleFileChange = (e) => {
+        const file = e.target.files[0]
+        if (file) {
+            setFileName(file.name)
+        }
+    }
 
     const handleGenerateReport = async () => {
         const resumeFile = resumeInputRef.current.files[ 0 ]
@@ -79,9 +87,9 @@ const Home = () => {
                                 <span className='dropzone__icon'>
                                     <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 16 12 12 8 16" /><line x1="12" y1="12" x2="12" y2="21" /><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3" /></svg>
                                 </span>
-                                <p className='dropzone__title'>Click to upload or drag &amp; drop</p>
-                                <p className='dropzone__subtitle'>PDF or DOCX (Max 5MB)</p>
-                                <input ref={resumeInputRef} hidden type='file' id='resume' name='resume' accept='.pdf,.docx' />
+                                <p className='dropzone__title'>{fileName ? `✓ ${fileName}` : 'Click to upload or drag & drop'}</p>
+                                <p className='dropzone__subtitle'>{fileName ? 'Ready to generate' : 'PDF or DOCX (Max 5MB)'}</p>
+                                <input ref={resumeInputRef} hidden type='file' id='resume' name='resume' accept='.pdf,.docx' onChange={handleFileChange} />
                             </label>
                         </div>
 
@@ -113,7 +121,7 @@ const Home = () => {
                 {/* Card Footer */}
                 <div className='interview-card__footer'>
                     <span className='footer-info'>AI-Powered Strategy Generation &bull; Approx 30s</span>
-                    <button
+                    <button 
                         onClick={handleGenerateReport}
                         className='generate-btn'>
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z" /></svg>

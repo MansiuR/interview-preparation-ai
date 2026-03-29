@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import '../style/interview.scss'
 import { useInterview } from '../hooks/useInterview.js'
+import { useAuth } from '../../auth/hooks/useAuth.js'
 import { useNavigate, useParams } from 'react-router'
 
 
@@ -59,8 +60,11 @@ const RoadMapDay = ({ day }) => (
 // ── Main Component ────────────────────────────────────────────────────────────
 const Interview = () => {
     const [ activeNav, setActiveNav ] = useState('technical')
+    const [ showProfile, setShowProfile ] = useState(false)
     const { report, getReportById, loading, getResumePdf } = useInterview()
+    const { user, handleLogout } = useAuth()
     const { interviewId } = useParams()
+    const navigate = useNavigate()
 
     useEffect(() => {
         if (interviewId) {
@@ -86,6 +90,37 @@ const Interview = () => {
     return (
         <div className='interview-page'>
             <div className='interview-layout'>
+
+                {/* ── Profile Icon (Top Right) ── */}
+                <div className='profile-container'>
+                    <button className='profile-icon' onClick={() => setShowProfile(!showProfile)}>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" /></svg>
+                    </button>
+                    {showProfile && (
+                        <div className='profile-modal'>
+                            <div className='profile-header'>
+                                <h3>User Profile</h3>
+                                <button className='close-btn' onClick={() => setShowProfile(false)}>✕</button>
+                            </div>
+                            <div className='profile-content'>
+                                <div className='profile-info'>
+                                    <label>Username:</label>
+                                    <p>{user?.username || 'N/A'}</p>
+                                </div>
+                                <div className='profile-info'>
+                                    <label>Email:</label>
+                                    <p>{user?.email || 'N/A'}</p>
+                                </div>
+                            </div>
+                            <div className='profile-footer'>
+                                <button className='logout-btn' onClick={async () => {
+                                    await handleLogout()
+                                    navigate('/login')
+                                }}>Logout</button>
+                            </div>
+                        </div>
+                    )}
+                </div>
 
                 {/* ── Left Nav ── */}
                 <nav className='interview-nav'>

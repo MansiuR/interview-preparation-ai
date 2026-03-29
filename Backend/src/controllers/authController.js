@@ -1,15 +1,16 @@
-const userModel = require("../models/user.model")
-const bcrypt = require("bcryptjs")
-const jwt = require("jsonwebtoken")
-const tokenBlacklistModel = require("../models/blacklist.model")
+import userModel from "../models/userModel.js"
+import bcrypt from "bcryptjs"
+import jwt from "jsonwebtoken"
+import tokenBlacklistModel from "../models/blacklistModel.js"
+import e from "express"
 
 /**
  * @name registerUserController
  * @description register a new user, expects username, email and password in the request body
  * @access Public
  */
-async function registerUserController(req, res) {
-
+ async function registerUserController(req, res) {
+try{
     const { username, email, password } = req.body
 
     if (!username || !email || !password) {
@@ -42,7 +43,12 @@ async function registerUserController(req, res) {
         { expiresIn: "1d" }
     )
 
-    res.cookie("token", token)
+    res.cookie("token", token, {
+    httpOnly: true,
+    secure: false,       // true only in production (https)
+    sameSite: "lax",
+    maxAge: 24 * 60 * 60 * 1000 // 1 day
+})
 
 
     res.status(201).json({
@@ -53,7 +59,12 @@ async function registerUserController(req, res) {
             email: user.email
         }
     })
-
+} catch (err) {
+        console.error("REGISTER ERROR:", err)
+        res.status(500).json({
+            message: "Server error during Register"
+        })
+    }
 }
 
 
@@ -62,8 +73,9 @@ async function registerUserController(req, res) {
  * @description login a user, expects email and password in the request body
  * @access Public
  */
-async function loginUserController(req, res) {
+  async function loginUserController(req, res) {
 
+try{
     const { email, password } = req.body
 
     const user = await userModel.findOne({ email })
@@ -88,7 +100,8 @@ async function loginUserController(req, res) {
         { expiresIn: "1d" }
     )
 
-    res.cookie("token", token)
+      res.cookie("token", token)
+
     res.status(200).json({
         message: "User loggedIn successfully.",
         user: {
@@ -97,6 +110,12 @@ async function loginUserController(req, res) {
             email: user.email
         }
     })
+} catch (err) {
+        console.error("LOGIN ERROR:", err)
+        res.status(500).json({
+            message: "Server error during login"
+        })
+    }
 }
 
 
@@ -105,7 +124,8 @@ async function loginUserController(req, res) {
  * @description clear token from user cookie and add the token in blacklist
  * @access public
  */
-async function logoutUserController(req, res) {
+ async function logoutUserController(req, res) {
+    try{
     const token = req.cookies.token
 
     if (token) {
@@ -117,6 +137,12 @@ async function logoutUserController(req, res) {
     res.status(200).json({
         message: "User logged out successfully"
     })
+} catch (err) {
+        console.error("LOGOUT ERROR:", err)
+        res.status(500).json({
+            message: "Server error during Logout"
+        })
+    }
 }
 
 /**
@@ -124,10 +150,9 @@ async function logoutUserController(req, res) {
  * @description get the current logged in user details.
  * @access private
  */
-async function getMeController(req, res) {
-
+ async function getMeController(req, res) {
+try{
     const user = await userModel.findById(req.user.id)
-
 
 
     res.status(200).json({
@@ -138,14 +163,13 @@ async function getMeController(req, res) {
             email: user.email
         }
     })
+} catch (err) {
+        console.error("GET-ME ERROR:", err)
+        res.status(500).json({
+            message: "Server error during Get-me"
+        })
+    }
 
 }
 
-
-
-module.exports = {
-    registerUserController,
-    loginUserController,
-    logoutUserController,
-    getMeController
-}
+export default { registerUserController, loginUserController, logoutUserController, getMeController };
